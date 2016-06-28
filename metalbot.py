@@ -127,7 +127,7 @@ class MetalBot(object):
             self.respond("%s rolled: %i" % (self.message['from']['first_name'], rannum))
         except Exception as e:
             logging.exception("something failed :(")
-            self.respond("Don't screw me over, %s! \xf0\x9f\x98\xa1" % (self.message['from']['first_name']))
+            self.respond("Don't screw me over, %s! \U0001f620" % (self.message['from']['first_name']))
 
     def cmd_metal(self, params):
         logging.info("metal!")
