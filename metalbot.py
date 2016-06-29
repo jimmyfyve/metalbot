@@ -57,8 +57,9 @@ class MetalBot(object):
                     return response['result']
                 else:
                     logging.error("API request failed, dunno why?")
-            except requests.ConnectionError, requests.ReadTimeout as e:
-                logging.exception("Something is wrong with your connection, trying again in %d s" % config.retry_interval)
+            except (requests.ConnectionError, requests.ReadTimeout) as e:
+                #logging.exception("Something is wrong with your connection, trying again in %d s" % config.retry_interval)
+                logging.error("Something is wrong with your connection, trying again in %d s" % config.retry_interval)
                 time.sleep(config.retry_interval)
             #except Exception as e:
             #    logging.exception("API request failed")
@@ -89,7 +90,7 @@ class MetalBot(object):
         self.updates = self.api_request('getUpdates', {'offset' : self.update_id})
         if self.updates:
             self.update_id = self.updates[-1]['update_id'] + 1
-            logging.debug("received %i updates" % len(self.updates))
+            logging.info("received %i updates" % len(self.updates))
             return self.updates
 
 
@@ -197,12 +198,20 @@ class MetalBot(object):
         self.send_text("Wake up %s, you lazy piece of shit!" % sender['first_name'], chat['id'])
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="metalbot.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename="metalbot.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO)
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.ERROR)
     requests_log.propagate = True
     logging.info("----==== \m/ Hello Metalworld! \m/ ====----")
     random.seed()
+
+    if not config.telegram_token:
+        logging.error("Telegram token missing!")
+        exit()
+
+    if not config.youtube_key:
+        logging.error("YouTube key missing!")
+        exit()
 
     m = MetalBot()
 
