@@ -38,7 +38,7 @@ class MetalBot(object):
                 command("/randomimage", self.cmd_randomimage),
                 command("/wake (.*?) (.*)", self.cmd_wake),
                 command("/read (.*)", self.cmd_read),
-                command("/what are you", self.cmd_whatareyou)
+                command("/what (.*)", self.cmd_what)
 
                 ]
 
@@ -176,10 +176,10 @@ class MetalBot(object):
 
     def cmd_insult(self, params):
         logging.info("insult")
-        insults = ["%s, you ugly, venomous toad!", "%s, you infectious pestilence!", "%s, you lunatic, lean-witted fool!", "%s, you impudent, tattered prodigal!", "%s, you old, withered crab tree!", "I bet your brain feels as good as new, %s, seeing that you never use it.", "I wasn't born with enough middle fingers to let you know how I feel about %s", "%s must have been born on a highway because that's where most accidents happen", "%s has two brain cells, one is lost and the other is out looking for it.", "%s, you are so fat the only letters of the alphabet you know are KFC", "% is as bright as a black hole, and twice as dense.", "I fart to make %s smell better", "Learn from %s's parent's mistakes - use birth control!", "Some drink from the fountain of knowledge; %s only gargled.", "%s, you are so stupid, you'd trip over a cordless phone.", "Ordinarily people live and learn. %s just lives.", "%s is as useless as ejection seats on a helicopter.", "%s is as useless as a one-legged man at an arse kicking contest"]
+        insults = ["%s, you ugly, venomous toad!", "%s, you infectious pestilence!", "%s, you lunatic, lean-witted fool!", "%s, you impudent, tattered prodigal!", "%s, you old, withered crab tree!", "I bet your brain feels as good as new, %s, seeing that you never use it.", "I wasn't born with enough middle fingers to let you know how I feel about %s", "%s must have been born on a highway because that's where most accidents happen", "%s has two brain cells, one is lost and the other is out looking for it.", "%s, you are so fat the only letters of the alphabet you know are KFC", "% is as bright as a black hole, and twice as dense.", "I fart to make %s smell better", "Learn from %s's parents' mistakes - use birth control!", "Some drink from the fountain of knowledge; %s only gargled.", "%s, you are so stupid, you'd trip over a cordless phone.", "Ordinarily people live and learn. %s just lives.", "%s is as useless as ejection seats on a helicopter.", "%s is as useless as a one-legged man at an arse kicking contest"]
         name = params[0]
         a = False
-        if name.lower() == self.first_name.lower():
+        if name.lower() == self.first_name.lower() or name.lower == "me" or name.lower == "myself":
             name = self.message['from']['first_name']
             a = True
         self.respond(random.choice(insults) % name)
@@ -219,11 +219,24 @@ class MetalBot(object):
             logging.exception("could not create voice message")
             self.respond("I got a hangover")
 
-    def cmd_whatareyou(self, params):
-        self.respond(random.choice(["My name is Bot. MetalBot.", "I'm your worst nightmare", "They call me the destroyer.", "Who wants to know?", "The bot that rules them all."]))
+    def cmd_what(self, params):
+        if "are you" in params[0]:
+            self.respond(random.choice(["My name is Bot. MetalBot.", "I'm your worst nightmare", "They call me the destroyer.", "Who wants to know?", "The bot that rules them all."]))
+        elif "the fuck" in params[0]:
+            self.respond("Watch your language!")
+
 
     def jb_wake(self, sender, chat):
         self.send_text("Wake up %s, you lazy piece of shit!" % sender['first_name'], chat['id'])
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
