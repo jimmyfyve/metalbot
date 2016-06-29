@@ -7,6 +7,10 @@ import re
 import random
 import youtubegetter
 import config
+import datetime
+import parsedatetime
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class command(object):
     def __init__(self, regex, action):
@@ -27,10 +31,15 @@ class MetalBot(object):
                 command("/metal", self.cmd_metal),
                 command("/8ball (.*)", self.cmd_8ball),
                 command("/insult (.*)", self.cmd_insult),
-                command("/randomimage", self.cmd_randomimage)
+                command("/randomimage", self.cmd_randomimage),
+                command("/wake (.*?) (.*)", self.cmd_wake)
                 ]
 
         self.youtube = youtubegetter.YoutubeGetter(config.youtube_key)
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+
+        self.alarms = []
 
     def api_request(self, method, data=None):
         """
@@ -156,6 +165,27 @@ class MetalBot(object):
         logging.info("randomimage")
         self.respond("randomimage")
 
+    def cmd_wake(self, params):
+        logging.info("wake")
+        if params[0] == "me":
+            userid = self.message['from']['id']
+        else:
+            self.respond("Who is %s?" % params[0])
+            return
+
+        time_struct, parse_status = parsedatetime.Calendar().parse(params[1])
+        if parse_status > 0:
+            datet = datetime.datetime(*time_struct[:6])
+            logging.info("%s parsed as %s", params[1], datet)
+            self.alarms.append(self.scheduler.add_job(self.jb_wake, 'date', (self.message['from'], self.message['chat']), run_date=datet))
+            self.respond(random.choice(["Alright, dickface.", "Sleep well my dear.", "Will do.", "You can count on me!"]))
+        else:
+            logging.info("could not parse %s", params[1])
+            self.respond(random.choice(["You're talking rubbish.", "I don't get it", "Can't hear you", "Whatever", "I don't understand"]))
+
+    def jb_wake(self, sender, chat):
+        self.send_text("Wake up %s, you lazy piece of shit!" % sender['first_name'], chat['id'])
+
 if __name__ == '__main__':
     logging.basicConfig(filename="metalbot.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
     requests_log = logging.getLogger("requests.packages.urllib3")
@@ -170,5 +200,6 @@ if __name__ == '__main__':
 
     while True:
         m.get_updates()
-        for u in m.updates:
-            m.handle_message(u['message'])
+        if m.updates:
+            for u in m.updates:
+                m.handle_message(u['message'])
