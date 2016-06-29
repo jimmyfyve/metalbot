@@ -9,6 +9,7 @@ import youtubegetter
 import config
 import datetime
 import parsedatetime
+import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -45,15 +46,23 @@ class MetalBot(object):
         """
         Makes a request to the Telegram API using the method 'method' and sending data 'data', which must be a key-value dictionary.
         """
-
-        try:
-            response = requests.post(self.baseurl + method, data).json()
-            if response['ok'] == True:
-                return response['result']
-            else:
-                logging.error("API request failed, dunno why?")
-        except Exception as e:
-            logging.exception("API request failed, dunno why?")
+        logging.debug("starting api request %s" % method)
+        tries = 0
+        while tries < config.max_tries:
+            try:
+                logging.debug("trying...")
+                response = requests.post(self.baseurl + method, data, timeout=config.timeout).json()
+                if response['ok'] == True:
+                    logging.debug("API request ok")
+                    return response['result']
+                else:
+                    logging.error("API request failed, dunno why?")
+            except requests.ConnectionError, requests.ReadTimeout as e:
+                logging.exception("Something is wrong with your connection, trying again in %d s" % config.retry_interval)
+                time.sleep(config.retry_interval)
+            #except Exception as e:
+            #    logging.exception("API request failed")
+            tries += 1
 
     def check_connection(self):
         """
@@ -76,6 +85,7 @@ class MetalBot(object):
         Fetches unconfirmed updates from the server. When this method is called, all updates fetched previously (up to self.update_id) will be confirmed.
         """
 
+        logging.debug("getting updates")
         self.updates = self.api_request('getUpdates', {'offset' : self.update_id})
         if self.updates:
             self.update_id = self.updates[-1]['update_id'] + 1
