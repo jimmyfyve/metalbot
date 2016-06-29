@@ -10,6 +10,9 @@ import config
 import datetime
 import parsedatetime
 import time
+import uuid
+import subprocess
+import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -33,7 +36,8 @@ class MetalBot(object):
                 command("/8ball (.*)", self.cmd_8ball),
                 command("/insult (.*)", self.cmd_insult),
                 command("/randomimage", self.cmd_randomimage),
-                command("/wake (.*?) (.*)", self.cmd_wake)
+                command("/wake (.*?) (.*)", self.cmd_wake),
+                command("/read (.*)", self.cmd_read)
                 ]
 
         self.youtube = youtubegetter.YoutubeGetter(config.youtube_key)
@@ -42,7 +46,7 @@ class MetalBot(object):
 
         self.alarms = []
 
-    def api_request(self, method, data=None):
+    def api_request(self, method, data=None, files=None):
         """
         Makes a request to the Telegram API using the method 'method' and sending data 'data', which must be a key-value dictionary.
         """
@@ -51,7 +55,7 @@ class MetalBot(object):
         while tries < config.max_tries:
             try:
                 logging.debug("trying...")
-                response = requests.post(self.baseurl + method, data, timeout=config.timeout).json()
+                response = requests.post(self.baseurl + method, data, files=files, timeout=config.timeout).json()
                 if response['ok'] == True:
                     logging.debug("API request ok")
                     return response['result']
@@ -93,6 +97,12 @@ class MetalBot(object):
             logging.info("received %i updates" % len(self.updates))
             return self.updates
 
+    def send_voice(self, voicefile, chat_id):
+        resp = self.api_request("sendVoice", {'chat_id': chat_id}, files={'voice' : open(voicefile, 'rb')})
+        if resp:
+            return True
+        else:
+            return False
 
     def send_text(self, text, chat_id):
         resp = self.api_request("sendMessage", {'chat_id' : chat_id, 'text' : text})
@@ -194,8 +204,22 @@ class MetalBot(object):
             logging.info("could not parse %s", params[1])
             self.respond(random.choice(["You're talking rubbish.", "I don't get it", "Can't hear you", "Whatever", "I don't understand"]))
 
+    def cmd_read(self, params):
+        try:
+            filename = "metalbot%s" % str(uuid.uuid4())
+            p = subprocess.Popen(['text2wave', '-o', '/tmp/%s.wav' % filename], stdin=subprocess.PIPE)
+            p.communicate(input=bytes(params[0], 'utf-8'))
+            subprocess.run(['opusenc', '/tmp/%s.wav' % filename, '/tmp/%s.opus' % filename])
+            self.send_voice('/tmp/%s.opus' % filename, self.message['chat']['id'])
+            os.remove('/tmp/%s.opus' % filename)
+            os.remove('/tmp/%s.wav' % filename)
+        except:
+            logging.exception("could not create voice message")
+            self.respond("I got a hangover")
+
     def jb_wake(self, sender, chat):
         self.send_text("Wake up %s, you lazy piece of shit!" % sender['first_name'], chat['id'])
+
 
 if __name__ == '__main__':
     logging.basicConfig(filename="metalbot.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO)
