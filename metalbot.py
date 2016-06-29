@@ -6,6 +6,7 @@ import logging
 import re
 import random
 import youtubegetter
+import infinigag
 import config
 import datetime
 import parsedatetime
@@ -38,8 +39,8 @@ class MetalBot(object):
                 command("/randomimage", self.cmd_randomimage),
                 command("/wake (.*?) (.*)", self.cmd_wake),
                 command("/read (.*)", self.cmd_read),
-                command("/what (.*)", self.cmd_what)
-
+                command("/what (.*)", self.cmd_what),
+                command("/gag", self.cmd_gag)
                 ]
 
         self.youtube = youtubegetter.YoutubeGetter(config.youtube_key)
@@ -224,6 +225,13 @@ class MetalBot(object):
             self.respond(random.choice(["My name is Bot. MetalBot.", "I'm your worst nightmare", "They call me the destroyer.", "Who wants to know?", "The bot that rules them all."]))
         elif "the fuck" in params[0]:
             self.respond("Watch your language!")
+
+    def cmd_gag(self, params):
+        gag = infinigag.randomgag()
+        if gag:
+            self.respond(gag)
+        else:
+            self.respond("No.")
 
 
     def jb_wake(self, sender, chat):
