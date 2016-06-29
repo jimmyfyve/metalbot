@@ -37,7 +37,9 @@ class MetalBot(object):
                 command("/insult (.*)", self.cmd_insult),
                 command("/randomimage", self.cmd_randomimage),
                 command("/wake (.*?) (.*)", self.cmd_wake),
-                command("/read (.*)", self.cmd_read)
+                command("/read (.*)", self.cmd_read),
+                command("/what are you", self.cmd_whatareyou)
+
                 ]
 
         self.youtube = youtubegetter.YoutubeGetter(config.youtube_key)
@@ -216,6 +218,9 @@ class MetalBot(object):
         except:
             logging.exception("could not create voice message")
             self.respond("I got a hangover")
+
+    def cmd_whatareyou(self, params):
+        self.respond(random.choice(["My name is Bot. MetalBot.", "I'm your worst nightmare", "They call me the destroyer.", "Who wants to know?", "The bot that rules them all."]))
 
     def jb_wake(self, sender, chat):
         self.send_text("Wake up %s, you lazy piece of shit!" % sender['first_name'], chat['id'])
