@@ -39,6 +39,7 @@ class MetalBot(object):
                 command("/randomimage", self.cmd_randomimage),
                 command("/wake (.*?) (.*)", self.cmd_wake),
                 command("/read (.*)", self.cmd_read),
+                command("/speak (.*)", self.cmd_read),
                 command("/what (.*)", self.cmd_what),
                 command("/gag", self.cmd_gag)
                 ]
@@ -134,7 +135,10 @@ class MetalBot(object):
     def handle_message_generic(self):
         try:
             text = self.message['text']
-            self.parse_command(text)
+            if self.parse_command(text):
+                return
+            else:
+                self.check_curses(text)
         except:
             pass
 
@@ -147,7 +151,17 @@ class MetalBot(object):
                     cmd.action(params)
                 except:
                     logging.exception("something went wrong")
-                break
+                return True
+
+    def check_curses(self, text):
+        curses = ("fuck", "bitch", "ass", "shit", "piss", "cunt", "cock", "tits", "arsch", "depp", "idiot", "dick", "fag", "nigger", "nigga", "slut", "pussy", "scheiss")
+        names = ("twat", "asshat", "sucker", "prick", "bastard", "cunt", "dick", "fuckface", "fucktard", "jackass", "jerk", "potty-mouth")
+        sentences = ("watch your dirty mouth", "check your language", "watch your goddamn tongue", "shut your fucking trap", "behave yourself")
+
+        for c in curses:
+            if c in text.lower():
+                self.respond("%s, %s you %s!" % (self.message['from']['first_name'], random.choice(sentences), random.choice(names)))
+                return True
 
 
     # actual commands
@@ -171,7 +185,8 @@ class MetalBot(object):
         logging.info("8ball")
         ballz = ["yes", "no", "reply hazy,try again", "outlook not so good", "as i see it,yes", "repeat the question", "not in a million years", "it is certain", "it is decidedly so", "my sources say no", "better not tell you now", "signs point to yes", "count on it", "meh"]
         if(len(params[0]) < 10):
-            self.respond("whaddya say?")
+            #self.respond("whaddya say?")
+            self.respond(random.choice(ballz))
         else:
             self.respond(random.choice(ballz))
 
@@ -221,9 +236,9 @@ class MetalBot(object):
             self.respond("I got a hangover")
 
     def cmd_what(self, params):
-        if "are you" in params[0]:
+        if "are you" in params[0].lower():
             self.respond(random.choice(["My name is Bot. MetalBot.", "I'm your worst nightmare", "They call me the destroyer.", "Who wants to know?", "The bot that rules them all."]))
-        elif "the fuck" in params[0]:
+        elif "the fuck" in params[0].lower():
             self.respond("Watch your language!")
 
     def cmd_gag(self, params):

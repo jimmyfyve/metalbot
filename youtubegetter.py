@@ -22,8 +22,7 @@ class YoutubeGetter(object):
 
 
     def selectVideo(self, vids):
-        n = random.randint(0,len(vids))
-        selection = vids[n]
+        selection = random.choice(vids)
         videoid = selection['id']['videoId']
         return videoid
 
