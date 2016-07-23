@@ -154,9 +154,9 @@ class MetalBot(object):
                 return True
 
     def check_curses(self, text):
-        curses = ("fuck", "bitch", "ass", "shit", "piss", "cunt", "cock", "tits", "arsch", "depp", "idiot", "dick", "fag", "nigger", "nigga", "slut", "pussy", "scheiss")
-        names = ("twat", "asshat", "sucker", "prick", "bastard", "cunt", "dick", "fuckface", "fucktard", "jackass", "jerk", "potty-mouth")
-        sentences = ("watch your dirty mouth", "check your language", "watch your goddamn tongue", "shut your fucking trap", "behave yourself")
+        curses = ("fuck", "bitch", "shit", "piss", "cunt", "cock", "tits", "arsch", "depp", "idiot", "dick", "fag", "nigger", "nigga", "slut", "pussy", "scheiss", "scheiß", "fick", "b1tch", "arse", "sheiiiiit", "pee pee", "cnt", "boobs", "oasch", "deeppp", "idi0t", "d1ck", "faag", "nogger", "schlutt", "pussie", "sheiss", "sheiß")
+        names = ("twat", "asshat", "sucker", "prick", "bastard", "cunt", "dick", "butthead", "fuckface", "fucktard", "jackass", "jerk", "potty-mouth")
+        sentences = ("watch your dirty mouth", "check your language", "watch your goddamn tongue", "shut your fucking trap", "behave yourself", "learn some respect", "pull yourselft together")
 
         for c in curses:
             if c in text.lower():
@@ -192,7 +192,7 @@ class MetalBot(object):
 
     def cmd_insult(self, params):
         logging.info("insult")
-        insults = ["%s, you ugly, venomous toad!", "%s, you infectious pestilence!", "%s, you lunatic, lean-witted fool!", "%s, you impudent, tattered prodigal!", "%s, you old, withered crab tree!", "I bet your brain feels as good as new, %s, seeing that you never use it.", "I wasn't born with enough middle fingers to let you know how I feel about %s", "%s must have been born on a highway because that's where most accidents happen", "%s has two brain cells, one is lost and the other is out looking for it.", "%s, you are so fat the only letters of the alphabet you know are KFC", "% is as bright as a black hole, and twice as dense.", "I fart to make %s smell better", "Learn from %s's parents' mistakes - use birth control!", "Some drink from the fountain of knowledge; %s only gargled.", "%s, you are so stupid, you'd trip over a cordless phone.", "Ordinarily people live and learn. %s just lives.", "%s is as useless as ejection seats on a helicopter.", "%s is as useless as a one-legged man at an arse kicking contest"]
+        insults = ["%s, you ugly, venomous toad!", "%s, you infectious pestilence!", "%s, you lunatic, lean-witted fool!", "%s, you impudent, tattered prodigal!", "%s, you old, withered crab tree!", "I bet your brain feels as good as new, %s, seeing that you never use it.", "I wasn't born with enough middle fingers to let you know how I feel about %s", "%s must have been born on a highway because that's where most accidents happen", "%s has two brain cells, one is lost and the other is out looking for it.", "%s, you are so fat the only letters of the alphabet you know are KFC", "%s is as bright as a black hole, and twice as dense.", "I fart to make %s smell better", "Learn from %s's parents' mistakes - use birth control!", "Some drink from the fountain of knowledge; %s only gargled.", "%s, you are so stupid, you'd trip over a cordless phone.", "Ordinarily people live and learn. %s just lives.", "%s is as useless as ejection seats on a helicopter.", "%s is as useless as a one-legged man at an arse kicking contest"]
         name = params[0]
         a = False
         if name.lower() == self.first_name.lower() or name.lower == "me" or name.lower == "myself":
@@ -286,4 +286,7 @@ if __name__ == '__main__':
         m.get_updates()
         if m.updates:
             for u in m.updates:
-                m.handle_message(u['message'])
+                msg = u.get('message', u.get('edited_message'))
+                if msg:
+                    logging.info(msg)
+                    m.handle_message(msg)
